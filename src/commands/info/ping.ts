@@ -1,9 +1,12 @@
-import { Command } from "../../structures/Command";
+import { Commands } from "../../structures/Command";
 
-export default new Command({
+export default new Commands({
     name: "ping",
-    description: "replies with pong",
-    run: async ({ interaction }) => {
-        interaction.followUp("Pong3");
-    }
+    aliases: ["f"],
+    cooldown: 10000,
+    permissions: [],
+    description: "see ping client",
+    run: async ({ client, message, args }) => {
+        message.channel.send(`Pong! (${client.ws.ping}ms)`)
+    },
 });

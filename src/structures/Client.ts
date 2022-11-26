@@ -4,16 +4,18 @@ import {
     ClientEvents,
     Collection
 } from "discord.js";
-import { CommandType } from "../typings/Command";
+import { CommandType, Command } from "../typings/Command";
 import glob from "glob";
 import { promisify } from "util";
 import { RegisterCommandsOptions } from "../typings/client";
 import { Event } from "./Event";
+import Mongo from "./Moongo"
 
 const globPromise = promisify(glob);
 
 export class ExtendedClient extends Client {
-    commands: Collection<string, CommandType> = new Collection();
+    commands_slash: Collection<string, CommandType> = new Collection();
+    commands: Collection<string, Command> = new Collection();
 
     constructor() {
         super({ intents: 32767 });
@@ -38,18 +40,34 @@ export class ExtendedClient extends Client {
     }
 
     async registerModules() {
-        // Commands
+        // slashCommands
         const slashCommands: ApplicationCommandDataResolvable[] = [];
+        const Commands = [];
         const commandFiles = await globPromise(
-            `${__dirname}/../commands/*/*{.ts,.js}`
+            `${__dirname}/../command/*/*{.ts,.js}`
         );
         commandFiles.forEach(async (filePath) => {
             const command: CommandType = await this.importFile(filePath);
             if (!command.name) return;
             console.log(command);
 
-            this.commands.set(command.name, command);
+            this.commands_slash.set(command.name, command);
             slashCommands.push(command);
+        });
+        
+
+        //commands
+        const commandsFiles = await globPromise(
+            `${__dirname}/../commands/*/*{.ts,.js}`
+        );
+
+        commandsFiles.forEach(async (filePath) => {
+            const command: Command = await this.importFile(filePath);
+            if (!command.name) return;
+            console.log(command);
+
+            this.commands.set(command.name, command);
+            Commands.push(command);
         });
 
         this.on("ready", () => {
@@ -69,5 +87,9 @@ export class ExtendedClient extends Client {
             );
             this.on(event.event, event.run);
         });
+
+        // mongo module
+        Mongo({ MongoURL: process.env.MongoURL , NAME: process.env.NAME })
+
     }
 }
