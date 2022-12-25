@@ -1,5 +1,6 @@
 import { Event } from "../structures/Event";
+import chalk from "chalk";
 
 export default new Event("ready", () => {
-    console.log("Bot is online");
+    console.log(chalk.dim("[BOT] - Online"));
 });

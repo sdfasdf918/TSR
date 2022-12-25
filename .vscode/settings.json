@@ -1,0 +1,15 @@
+{
+    "cSpell.words": [
+        "commandname",
+        "cooldown",
+        "cooldowns",
+        "Moongo",
+        "parens",
+        "premmision"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.tslint": true
+    },
+    "tslint.configFile": "../tslint.json",
+    "tslint.alwaysShowRuleFailuresAsWarnings": true
+}

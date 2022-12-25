@@ -55,8 +55,6 @@ export interface Command extends ChatInputApplicationCommandData {
     permissions?: PermissionResolvable[],
     aliases: Array<string>,
     cooldown?: number,
+    useAge?: string,
     run: CommandRun;
-}
-export interface Commandf extends Command {
-
 }

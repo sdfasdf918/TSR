@@ -1,6 +1,6 @@
-import { Commands } from "../../structures/Command";
+import { Command } from "../../structures/Command";
 
-export default new Commands({
+export default new Command({
     name: "ping",
     aliases: [],
     cooldown: 10,

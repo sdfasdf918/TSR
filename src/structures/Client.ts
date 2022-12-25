@@ -2,7 +2,9 @@ import {
     ApplicationCommandDataResolvable,
     Client,
     ClientEvents,
-    Collection
+    Collection,
+    Partials,
+    GatewayIntentBits
 } from "discord.js";
 import { CommandType, Command } from "../typings/Command";
 import glob from "glob";
@@ -10,6 +12,7 @@ import { promisify } from "util";
 import { RegisterCommandsOptions } from "../typings/client";
 import { Event } from "./Event";
 import Mongo from "./Moongo"
+import chalk from "chalk";
 
 const globPromise = promisify(glob);
 
@@ -19,7 +22,38 @@ export class ExtendedClient extends Client {
     cooldowns: Collection<string, number> = new Collection();
 
     constructor() {
-        super({ intents: 32767 });
+        super({
+            intents: [
+                1,
+                2,
+                4,
+                16,
+                32,
+                64,
+                128,
+                256,
+                512,
+                1024,
+                2048,
+                4096,
+                8192,
+                16384,
+                32768,
+                65536,
+                1048576,
+                2097152,
+                "GuildPresences"
+            ],
+            partials: [
+                Partials.User,
+                Partials.Channel,
+                Partials.GuildMember,
+                Partials.GuildScheduledEvent,
+                Partials.Message,
+                Partials.Reaction,
+                Partials.ThreadMember
+            ]
+        });
     }
 
     start() {
@@ -36,7 +70,7 @@ export class ExtendedClient extends Client {
             console.log(`Registering commands to ${guildId}`);
         } else {
             this.application?.commands.set(commands);
-            console.log("Registering global commands");
+            console.log(chalk.dim("[DISCORD] - Registering global commands"));
         }
     }
 
@@ -45,17 +79,19 @@ export class ExtendedClient extends Client {
         const slashCommands: ApplicationCommandDataResolvable[] = [];
         const Commands = [];
         const commandFiles = await globPromise(
-            `${__dirname}/../command/*/*{.ts,.js}`
+            `${__dirname}/../slashCommand/*/*{.ts,.js}`
         );
         commandFiles.forEach(async (filePath) => {
             const command: CommandType = await this.importFile(filePath);
             if (!command.name) return;
-            console.log(command);
 
             this.commands_slash.set(command.name, command);
             slashCommands.push(command);
         });
+        //log done load commands
+        console.log(chalk.dim("[SYSTEM] - Done Load SlashCommands"));
         
+
 
         //commands
         const commandsFiles = await globPromise(
@@ -65,12 +101,14 @@ export class ExtendedClient extends Client {
         commandsFiles.forEach(async (filePath) => {
             const command: Command = await this.importFile(filePath);
             if (!command.name) return;
-            console.log(command);
 
             this.commands.set(command.name, command);
             Commands.push(command);
         });
+        //log done load commands
+        console.log(chalk.dim("[SYSTEM] - Done Load Commands"));
 
+        // ready Event
         this.on("ready", () => {
             this.registerCommands({
                 commands: slashCommands,
@@ -90,7 +128,9 @@ export class ExtendedClient extends Client {
         });
 
         // mongo module
-        Mongo({ MongoURL: process.env.MongoURL , NAME: process.env.NAME })
+        Mongo({ MongoURL: process.env.MongoURL , NAME: process.env.NAME }).then(() => {
+            console.log(chalk.dim("[MongoDB] - Connected"));
+        })
 
     }
 }

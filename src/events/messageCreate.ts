@@ -1,9 +1,12 @@
 import { Event } from "../structures/Event";
 import { client } from "..";
 import { env } from "process";
-import { Message, Permissions } from "discord.js";
+import { EmbedBuilder, Message, PermissionsBitField } from "discord.js";
 
 export default new Event("messageCreate",async (message) => {
+
+    let cooldown;
+    
     if (
         message.author.bot ||
         !message.guild ||
@@ -17,8 +20,11 @@ export default new Event("messageCreate",async (message) => {
         .split(/ +/g);
 
     const command = client.commands.get(cmd.toLowerCase()) || client.commands.find(c => c.aliases?.includes(cmd.toLowerCase()));
-
-    let cooldown = client.cooldowns.get(`${command.name}-${message.member.user.username}`);
+        if (command) {
+            cooldown = client.cooldowns.get(`${command.name}-${message.member.user.username}`);
+        } else {
+            return;
+        }
     
 
     if (command.cooldown && cooldown) {
@@ -34,8 +40,15 @@ export default new Event("messageCreate",async (message) => {
         client.cooldowns.set(`${command.name}-${message.member.user.username}`, Date.now() + command.cooldown * 1000)
     }
 
-    if (!message.member.permissions.has(Permissions.resolve(command.permissions))) {
-        message.channel.send("sorry but you haven't premmision to use this command")
+    if (!message.member.permissions.has(PermissionsBitField.resolve(command.permissions))) {
+        message.channel.send({
+            embeds: [
+                new EmbedBuilder()
+                .setColor("Red")
+                .setTitle("ERROR")
+                .setDescription(`you don't have \`${command.permissions}\` to use this command.`)
+            ]
+        })
         return;
     }
 

@@ -1,4 +1,4 @@
-import { CommandInteractionOptionResolver, Permissions } from "discord.js";
+import { CommandInteractionOptionResolver, PermissionFlagsBits, PermissionOverwriteManager, PermissionResolvable, PermissionsBitField, EmbedBuilder } from "discord.js";
 import { client } from "..";
 import { Event } from "../structures/Event";
 import { ExtendedInteraction } from "../typings/Command";
@@ -11,8 +11,15 @@ export default new Event("interactionCreate", async (interaction) => {
 
         let cooldown = client.cooldowns.get(`${command.name}-${interaction.member.user.username}`);
     
-        if (interaction.memberPermissions.has(Permissions.resolve(command.userPermissions))) {
-            interaction.reply("sorry but you haven't premmision to use this command")
+        if (!interaction.memberPermissions.has(PermissionsBitField.resolve(command.userPermissions))) {
+            interaction.followUp({
+                embeds: [
+                    new EmbedBuilder()
+                    .setColor("Red")
+                    .setTitle("ERROR")
+                    .setDescription(`you don't have \`${command.userPermissions}\` to use this command.`)
+                ]
+            })
             return;
         }
 
