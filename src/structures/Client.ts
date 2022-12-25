@@ -16,6 +16,7 @@ const globPromise = promisify(glob);
 export class ExtendedClient extends Client {
     commands_slash: Collection<string, CommandType> = new Collection();
     commands: Collection<string, Command> = new Collection();
+    cooldowns: Collection<string, number> = new Collection();
 
     constructor() {
         super({ intents: 32767 });

@@ -32,12 +32,14 @@ type RunFunction = (options: RunOptions) => any;
 export type CommandType = {
     userPermissions?: PermissionResolvable[];
     run: RunFunction;
+    cooldown?: number;
 } & ChatInputApplicationCommandData;
 
 interface RunFunctionCommand {
     client: ExtendedClient;
     message: Message;
     args: string[];
+    cooldown?: number;
 }
 
 export type CommandsType = {
